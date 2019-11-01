@@ -20,22 +20,60 @@ import numpy as np
 import operator
 import collections
 
+def prettyPrint(pdict):
+    for key, val in pdict.items():
+        print(key, ":", val)
+
 # this should be part of the workflow ref
-#atomSet = ('H', 'C', 'N', 'O', 'Si', 'P', 'S')
+atomList = ['Si', 'C', 'P', 'N', 'S', 'O']
 
 origin = Molecule.from_file('./data/mol2mol/centermol.xyz')
 target = Molecule.from_file('./data/mol2mol/targetmol.xyz')
 
 transVec = target.center_of_mass - origin.center_of_mass
 
-eleCountDict = dict()
+eleCountDict = collections.OrderedDict()
 for ele in list(set(origin.species)):
-    eleCountDict[ele] = origin.species.count(ele)
-print("element: number")
-for key, val in eleCountDict.items():
-    print(key,":",val)
-print(transVec)
-sorted_elecount = sorted(eleCountDict.items(), key=lambda kv:kv[1])
-sorted_dict = collections.OrderedDict(sorted_elecount)
+    if origin.species.count(ele) == 1:
+        eleCountDict[ele] = origin.species.count(ele)
+# prettyPrint(eleCountDict)
+# sorted_elecount = sorted(eleCountDict.items(), key=lambda kv:kv[1])
+# eleCountDict = collections.OrderedDict(sorted_elecount)
+# prettyPrint(eleCountDict)
 
-print(sorted_dict)
+# singAtomDict = dict()
+# for key, val in eleCountDict.items():
+#     if val == 1:
+#         singAtomDict[key] = val
+# prettyPrint(singAtomDict)
+
+def getMolVec(mol, singAtomDict):
+    molVec = np.array([])
+    # list of index indicating those atoms used in building the vector
+    indexVecList = list()
+    for key in singAtomDict.keys():
+        index = mol.species.index(key)
+        indexVecList.append(index)
+        vec = (mol.sites[index].coords - mol.center_of_mass)
+        molVec = np.concatenate((molVec, vec))
+    if molVec.shape[0] == 9:
+        return molVec.reshape(-1, 3)
+    else:
+        newmol = mol.copy()
+        newmol.append("He", mol.center_of_mass)
+        donesite = []
+        for index in indexVecList:
+            donesite.append(mol.sites[index])
+        startsite = newmol.sites[-1]
+        donesite.append(startsite)
+        distSortIndex = np.argsort(newmol.distance_matrix[-1])
+        for index in distSortIndex:
+            if not newmol.sites[index] in donesite:
+                molVec = np.concatenate((molVec, (newmol.sites[index].coords - mol.center_of_mass)))
+                donesite.append(newmol.sites[index])
+            if molVec.shape[0] == 9:
+                break
+        return molVec.reshape(-1, 3)
+
+molVec = getMolVec(origin, eleCountDict)
+print(molVec)
