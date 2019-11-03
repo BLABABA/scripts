@@ -36,16 +36,6 @@ eleCountDict = collections.OrderedDict()
 for ele in list(set(origin.species)):
     if origin.species.count(ele) == 1:
         eleCountDict[ele] = origin.species.count(ele)
-# prettyPrint(eleCountDict)
-# sorted_elecount = sorted(eleCountDict.items(), key=lambda kv:kv[1])
-# eleCountDict = collections.OrderedDict(sorted_elecount)
-# prettyPrint(eleCountDict)
-
-# singAtomDict = dict()
-# for key, val in eleCountDict.items():
-#     if val == 1:
-#         singAtomDict[key] = val
-# prettyPrint(singAtomDict)
 
 def getMolVec(mol, singAtomDict):
     molVec = np.array([])
