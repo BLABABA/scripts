@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import os
 import itertools
 
-path = "plot_exciton_wfn_data/866"
+path = "plot_exciton_wfn_data/1068"
 
 datalist = os.listdir(path)
 for val in datalist[:]:
@@ -40,5 +40,5 @@ for key, val in plotdata.items():
 plt.legend((plotlist), (namelist))
 plt.xlabel("$K$ Path")
 plt.ylabel('$\sum |A(k)|^2$')
-plt.title('Find K grid = $8 x 6 x 6$')
-fig.savefig('866.png', bbox_inches='tight', dpi=300)
+plt.title('Find K grid = $10 x 6 x 8$')
+fig.savefig('1068.png', bbox_inches='tight', dpi=300)
