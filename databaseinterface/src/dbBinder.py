@@ -55,12 +55,14 @@ class dbcontrol(object):
         """
 
         # clean up dbpath in case there are something else
-        for val in dbpath[:]:
-            if not val.endswith("json"):
-                dbpath.remove(val)
         self.dbpath = dbpath
+        namelist = os.listdir(self.dbpath)
+        for val in namelist[:]:
+            if not val.endswith("json"):
+                namelist.remove(val)
+        self.namelist = namelist
 
-    def loaddb(self, namelist=os.listdir(self.dbpath)):
+    def loaddb(self):
         """
         namelist: list of strings
             - namelist is a list of strings, each of the string is the
@@ -78,12 +80,12 @@ class dbcontrol(object):
         """
 
         # in case the namelist is only indicated with ID without the suffix
-        for i, val in namelist:
+        for i, val in enumerate(self.namelist):
             if not val.endswith(".json"):
-                namelist[i] = val+".json"
+                self.namelist[i] = val+".json"
         # load in the data into a dictionary with each key, val as a dict
         self.db = dict()
-        for name in namelist:
+        for name in self.namelist:
             with open(os.path.join(self.dbpath, name), "r") as f:
                 data = json.load(f)
             self.db[name[:-5]] = data
@@ -110,7 +112,11 @@ class dbcontrol(object):
             written correctly. 
         """
         for newval in val:
-            self.db = update(self.db, newval)
+            if list(newval.keys())[0] in list(self.db.keys()):
+                self.db = update(self.db, newval)
+                print(list(newval.keys())[0])
+            else:
+                print('Warning: Struct %s is not in the current database!' %(list(newval.keys())[0]))
         
     def delkey(self, val):
         """
@@ -130,7 +136,10 @@ class dbcontrol(object):
         """
         print("Warning!!! You are about to delete some values from db!!!")
         for newval in val:
-            self.db = update(self.db, newval)
+            if list(newval.keys())[0] in list(self.db.keys()):
+                self.db = update(self.db, newval)
+            else:
+                print('Warning: Struct %s is not in the current database!' %(list(newval.keys())[0]))
 
     def writedb(self, outpath):
         """
