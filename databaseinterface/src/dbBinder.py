@@ -152,7 +152,7 @@ class dbcontrol(object):
                 if val == math.inf:
                     dictionary.pop(key)
                 else:
-                    dictionary[key] = update(dv, val)
+                    dictionary[key] = self.update(val, dv)
             else:
                 if val == math.inf:
                     dictionary.pop(key)
