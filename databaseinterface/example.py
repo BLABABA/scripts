@@ -68,10 +68,17 @@ def loaddata():
     return newsampleID, newsampledata, datalist
 
 if __name__ == "__main__":
-    newsampleID, newsampledata, datalist = loaddata()
-    database = dbcontrol('/home/xingyu/matml_workflow/scripts/databaseinterface/harald95000_test')
+    #newsampleID, newsampledata, datalist = loaddata()
+    database = dbcontrol('db')
     database.loaddb()
-    print('The length of datalist is')
-    print(len(datalist))
-    database.writedata(datalist)
-    database.writedb(outpath='/home/xingyu/matml_workflow/scripts/databaseinterface/harald95000_json')
+    nested_key = ['dft', 'bandgap']
+    bandgaps = database.getdata(nested_key)
+    print(bandgaps)
+    for key, val in database.db.items():
+        print(key)
+        print(val['dft']['bandgap'])
+    
+    # print('The length of datalist is')
+    # print(len(datalist))
+    # database.writedata(datalist)
+    # database.writedb(outpath='/home/xingyu/matml_workflow/scripts/databaseinterface/harald95000_json')

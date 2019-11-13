@@ -17,37 +17,19 @@ import json
 import collections
 import six
 import math
+import numpy as np
 
 # python 3.8+ compatibility
 try:
     collectionsAbc = collections.abc
 except:
     collectionsAbc = collections
-# this part is taken from:
-# https://stackoverflow.com/questions/3232943/update
-#-value-of-a-nested-dictionary-of-varying-depth
-def update(dictionary, newdict):
-    for key, val in six.iteritems(newdict):
-        dv = dictionary.get(key, {})
-        if not isinstance(dv, collectionsAbc.Mapping):
-            if val == math.inf:
-                dictionary.pop(key)
-            else:
-                dictionary[key] = val
-        elif isinstance(val, collectionsAbc.Mapping):
-            if val == math.inf:
-                dictionary.pop(key)
-            else:
-                dictionary[key] = update(dv, val)
-        else:
-            if val == math.inf:
-                dictionary.pop(key)
-            else:
-                dictionary[key] = val
-    return dictionary
+
 
 class dbcontrol(object):
+
     def __init__(self, dbpath):
+        """provide the database path and initiate the dbcontrol"""
         """
         dbpath: string
         this is the path point to the folder where 
@@ -61,6 +43,8 @@ class dbcontrol(object):
             if not val.endswith("json"):
                 namelist.remove(val)
         self.namelist = namelist
+        self.namelist.sort()
+
 
     def loaddb(self):
         """
@@ -90,6 +74,7 @@ class dbcontrol(object):
                 data = json.load(f)
             self.db[name[:-5]] = data
 
+
     def writedata(self, val):
         """
         val: a list of dict
@@ -111,14 +96,17 @@ class dbcontrol(object):
             the each val element follows the standard the format, the values will be 
             written correctly. 
         """
+
         for newval in val:
             if list(newval.keys())[0] in list(self.db.keys()):
-                self.db = update(self.db, newval)
+                self.db = self.update(newdict=newval)
                 print(list(newval.keys())[0])
             else:
                 print('Warning: Struct %s is not in the current database!' %(list(newval.keys())[0]))
         
+
     def delkey(self, val):
+        """used to delete key"""
         """
         val: a list of dict
             - similar as that in writedata(self, val), val is a list of dictionaries,
@@ -137,16 +125,87 @@ class dbcontrol(object):
         print("Warning!!! You are about to delete some values from db!!!")
         for newval in val:
             if list(newval.keys())[0] in list(self.db.keys()):
-                self.db = update(self.db, newval)
+                self.db = self.update(newdict=newval)
             else:
                 print('Warning: Struct %s is not in the current database!' %(list(newval.keys())[0]))
 
-    def writedb(self, outpath):
+    # this part is taken from:
+    # https://stackoverflow.com/questions/3232943/update
+    #-value-of-a-nested-dictionary-of-varying-depth
+    def update(self, newdict, dictionary=None):
+        """update values to db"""
         """
-        outpath:
+        - newdict: dict
+            the new data, which will be updated into self.db
+        """
+
+        if dictionary == None:
+            dictionary = self.db
+        for key, val in six.iteritems(newdict):
+            dv = dictionary.get(key, {})
+            if not isinstance(dv, collectionsAbc.Mapping):
+                if val == math.inf:
+                    dictionary.pop(key)
+                else:
+                    dictionary[key] = val
+            elif isinstance(val, collectionsAbc.Mapping):
+                if val == math.inf:
+                    dictionary.pop(key)
+                else:
+                    dictionary[key] = self.update(val, dv)
+            else:
+                if val == math.inf:
+                    dictionary.pop(key)
+                else:
+                    dictionary[key] = val
+        return dictionary
+
+
+    def writedb(self, outpath):
+        """write the database into jsons with specified output path"""
+        """
+        - outpath:
             dir where you want to output your data
         """
+
         for key, val in self.db.items():
             with open(os.path.join(outpath, key+".json"), "w") as f:
                 f.write(json.dumps(val, indent=4))
+    
 
+    def nested_get(self, data, nested_key):
+        """using nested_key, get target value for one material"""
+        """
+        - data: dict
+            the dictionary for one material
+
+        - nested_key: list
+            the list of keys pointing to the data you want to get
+
+        """
+        
+        internal_dict_value = data
+        for k in nested_key:
+            internal_dict_value = internal_dict_value.get(k, None)
+            if internal_dict_value == None:
+                return None
+        return internal_dict_value
+
+
+    def getdata(self, nested_key, db=None):
+        """query data from db"""
+        """
+        - nested_key: list
+            the list of keys pointing to the data you want to get
+
+        - db: dict
+            should be self.db if not indicated
+
+        """
+
+        targetval = np.array([])
+        if db == None:
+            db = self.db
+        for structname in db.keys():
+            targetval = np.append(targetval, self.nested_get(db[structname], nested_key))
+        return targetval.reshape(len(db.keys()), )
