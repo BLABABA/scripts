@@ -69,7 +69,7 @@ def loaddata():
 
 if __name__ == "__main__":
     #newsampleID, newsampledata, datalist = loaddata()
-    database = dbcontrol('../database')
+    database = dbcontrol('db')
     database.loaddb()
     nested_key = ['dft', 'bandgap']
     bandgaps = database.getdata(nested_key)
