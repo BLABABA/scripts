@@ -66,8 +66,8 @@ plotlist = list()
 namelist = list()
 
 for key, val in plotdata.items():
-    if key !="exciton_01":
-        continue
+#    if key !="exciton_01":
+#        continue
     namelist.append(key)
     plotlist.append(plt.plot(val[0][:, 0], val[0][:, 1], \
                              linestyle='-', color = next(colorlist), linewidth=1.5)[0])
