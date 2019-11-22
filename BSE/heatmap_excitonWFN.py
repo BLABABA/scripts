@@ -28,32 +28,31 @@ def extractdata(filename):
                 data[i][j] += 1
     return data
 
-fig, ax = plt.subplots(figsize=(7, 5))
-data = extractdata(os.path.join(path, "exciton_04"))
-allval = np.array([]).reshape(16, 0)
+fig, ax = plt.subplots(figsize=(4, 5))
+data = extractdata(os.path.join(path, "exciton_01"))
+finex = 16
+finey = 2
+allval = np.array([]).reshape(finex, 0)
 for k in range(2):
     index = np.where(data[:, 2] == data[k][2])[0]
     val = data[index]
     val = val[val[:, 0].argsort()]
-    heatval = np.zeros((16, 2))
+    heatval = np.zeros((finex, finey))
     for i in range(heatval.shape[0]):
         for j in range(heatval.shape[1]):
-            heatval[i][j] = val[i*2 + j][3]
+            heatval[i][j] = val[i*finey + j][3]
     allval = np.concatenate((allval, heatval), axis=1)
-    #plt.imshow(heatval, cmap='hot', interpolation='nearest')
 allval = allval / np.max(allval)
-fig.set_size_inches(6, 5)
-sns.heatmap(ax=ax, data=allval, linewidth=0.0, cmap="hot", \
+
+print(allval[:, int(allval.shape[1]/2-1):int(allval.shape[1]/2+1)])
+tmpplot = allval[:, int(allval.shape[1]/2-1):int(allval.shape[1]/2+1)].copy()
+tmpplot = np.mean(tmpplot, 1).reshape(-1, 1)
+print(tmpplot.shape)
+fig.set_size_inches(3, 5)
+sns.heatmap(ax=ax, data=tmpplot, linewidth=0.0, cmap="hot", \
             xticklabels=False, yticklabels=False,\
             cbar_kws={'label': '$\sum |A(k)|^2$'})  #square=True
 sns.set(font_scale=1.2)
-plt.xlabel("Exciton 04", fontsize=14)
+plt.xlabel("Exciton 01", fontsize=14)
 plt.show()
-fig.savefig("Exciton_04_16x2x2.png", dpi=100, bbox_inches='tight')
-
-## scattering map ###
-#plt.scatter(data[index][:, 0], data[index][:, 1], c=data[index][:, 3], cmap='jet')
-#plt.colorbar()
-#plt.show()
-
-colorlist = itertools.cycle(['b', 'r', 'k', 'g', 'y', 'c', 'm'])
+#fig.savefig("Exciton_04_16x2x2.png", dpi=100, bbox_inches='tight')
